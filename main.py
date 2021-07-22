@@ -2,6 +2,8 @@ from tkinter import *
 from random import choice, randint, shuffle
 from tkinter import messagebox
 import pyperclip
+import json
+
 
 # ---------------------------- PASSWORD GENERATOR ------------------------------- #
 def generator():
@@ -24,25 +26,31 @@ def generator():
     input3.insert(END, password)
     pyperclip.copy(password)
 
+
 # ---------------------------- SAVE PASSWORD ------------------------------- #
 def save():
     web = input1.get()
     password = input3.get()
     email = input2.get()
-    user_detail = f"Website: {web} | Email/Username: {email} | Password: {password}\n"
-
+    user_detail = {
+        web: {
+            'email': email,
+            'password': password
+        }
+    }
     if len(password) == 0 or len(web) == 0 or len(email) == 0:
         messagebox.showwarning(title="Warning", message="Don't leave any field empty")
     else:
-        is_ok = messagebox.askokcancel(title=web, message=f"These are the detail entered:\nEmail/username: {email}\n"
-                                                          f"Password: {password}\n Is it ok to save?")
+        with open("User_data.json", mode="r") as data:
+            loaded_data = json.load(data)
+            loaded_data.update(user_detail)
+        with open("User_data.json", mode="w") as data:
+            json.dump(loaded_data, data, indent=4)
+            input1.delete(0, END)
+            input2.delete(0, END)
+            input3.delete(0, END)
 
-        if is_ok:
-            with open("Userdata.txt", mode="a") as data:
-                data.write(user_detail)
-                input1.delete(0, END)
-                input2.delete(0, END)
-                input3.delete(0, END)
+
 # ---------------------------- UI SETUP ------------------------------- #
 window = Tk()
 window.title("Password Saver")
@@ -72,7 +80,6 @@ input2.insert(0, "eg: swaraj413@gmail.com")
 
 input3 = Entry(width=20)
 input3.grid(column=1, row=3, columnspan=1)
-
 
 button1 = Button(text="Generate Password", width=15, command=generator)
 button1.grid(column=2, row=3)
